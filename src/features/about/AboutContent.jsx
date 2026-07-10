@@ -1,6 +1,6 @@
 "use client";
 
-import { steps, values } from "@/lib/mockData/AboutMockData";
+import { steps, values } from "@/constants/mockData/AboutMockData";
 import { Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 

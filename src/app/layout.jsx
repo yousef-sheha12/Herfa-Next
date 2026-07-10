@@ -1,16 +1,23 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider } from "@/hooks/useApi";
+import { ToastProvider } from "@/hooks/useToast";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import "@/styles/globals.css";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+      staleTime: 2 * 60 * 1000,
+    },
+  },
+});
 export default function RootLayout({ children }) {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <html lang="en" data-theme="herfa">
       <head>
@@ -22,23 +29,16 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <Navbar />
-            {children}
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: "#1E293B",
-                  color: "#fff",
-                  borderRadius: "12px",
-                },
-              }}
-            />
-          </AuthProvider>
-        </QueryClientProvider>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <ToastProvider>
+                <Navbar />
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </ToastProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

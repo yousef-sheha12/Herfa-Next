@@ -1,23 +1,17 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { Lock, ArrowRight, ShieldAlert } from 'lucide-react'
-import AuthInput from '@/components/ui/AuthInput'
-import {
-  clearPasswordResetEmail,
-  getPasswordResetEmail,
-  updateUserPassword,
-} from '@/lib/authStorage'
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { Lock, ArrowRight, ShieldAlert, Loader2 } from "lucide-react";
+import AuthInput from "@/components/ui/AuthInput";
+import { useResetPassword } from "@/hooks/auth/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 export default function ResetPassForm() {
-  const router = useRouter()
-  const [email, setEmail] = useState(null)
-
-  useEffect(() => {
-    setEmail(getPasswordResetEmail())
-  }, [])
+  const toast = useToast();
+  const router = useRouter();
+  const { mutateAsync: resetPass, isPending } = useResetPassword();
 
   const {
     register,
@@ -25,36 +19,58 @@ export default function ResetPassForm() {
     setError,
     formState: { errors },
   } = useForm({
-    defaultValues: { password: '', confirmPassword: '' },
-  })
+    defaultValues: { newPassword: "", confirmPassword: "" },
+  });
 
-  const onSubmit = ({ password, confirmPassword }) => {
-    const currentEmail = getPasswordResetEmail()
-    if (!currentEmail) {
-      router.push('/auth/forgot-password')
-      return
+  useEffect(() => {
+    const email = localStorage.getItem("herfa-password-reset-email");
+    const token = localStorage.getItem("herfa-password-reset-token");
+    if (!email || !token) {
+      router.push("/auth/forgot-password");
+    }
+  }, [router]);
+
+  const onSubmit = async ({ newPassword, confirmPassword }) => {
+    if (newPassword.length < 6) {
+      setError("newPassword", {
+        type: "manual",
+        message: "Password must be at least 6 characters.",
+      });
+      return;
     }
 
-    if (password.length < 6) {
-      setError('password', {
-        type: 'manual',
-        message: 'Password must be at least 6 characters.',
-      })
-      return
+    if (newPassword !== confirmPassword) {
+      setError("confirmPassword", {
+        type: "manual",
+        message: "Passwords do not match.",
+      });
+      return;
     }
 
-    if (password !== confirmPassword) {
-      setError('confirmPassword', {
-        type: 'manual',
-        message: 'Passwords do not match.',
-      })
-      return
+    const email = localStorage.getItem("herfa-password-reset-email");
+    const token = localStorage.getItem("herfa-password-reset-token");
+
+    if (!email || !token) {
+      toast.error("Session expired. Please start over.");
+      router.push("/auth/forgot-password");
+      return;
     }
 
-    updateUserPassword(currentEmail, password)
-    clearPasswordResetEmail()
-    router.push('/auth/login')
-  }
+    try {
+      await resetPass({ email, token, newPassword });
+      localStorage.removeItem("herfa-password-reset-email");
+      localStorage.removeItem("herfa-password-reset-token");
+      toast.success("Password reset successfully!");
+      router.push("/auth/login");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Password reset failed";
+      setError("newPassword", { type: "manual", message });
+    }
+  };
 
   return (
     <>
@@ -66,10 +82,7 @@ export default function ResetPassForm() {
           Reset Password.
         </h2>
         <p className="px-2 text-sm font-light leading-relaxed text-gray-500">
-          Create a new, strong password to secure your account.
-        </p>
-        <p className="rounded-full bg-amber-50 px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-600">
-          {email ? `Demo reset for ${email}` : 'Temporary demo password reset'}
+          Enter your new password to reset your account.
         </p>
       </div>
 
@@ -82,8 +95,8 @@ export default function ResetPassForm() {
           placeholder="********"
           icon={Lock}
           type="password"
-          error={errors.password?.message}
-          {...register('password')}
+          error={errors.newPassword?.message}
+          {...register("newPassword")}
         />
 
         <AuthInput
@@ -92,17 +105,22 @@ export default function ResetPassForm() {
           icon={Lock}
           type="password"
           error={errors.confirmPassword?.message}
-          {...register('confirmPassword')}
+          {...register("confirmPassword")}
         />
 
         <button
           type="submit"
-          className="group mt-1 flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 sm:mt-2 sm:py-3.5 sm:text-base"
+          disabled={isPending}
+          className="group mt-1 flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
         >
-          <span>Update Password</span>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          {isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          )}
+          <span>{isPending ? "Updating..." : "Update Password"}</span>
         </button>
       </form>
     </>
-  )
+  );
 }

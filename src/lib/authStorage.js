@@ -65,3 +65,24 @@ export const getPasswordResetEmail = () => {
 export const clearPasswordResetEmail = () => {
   localStorage.removeItem("herfa-password-reset-email");
 };
+
+export const getToken = () => {
+  try {
+    const data = localStorage.getItem("herfa-auth");
+    return data ? JSON.parse(data).token : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setAuth = (user, token) => {
+  if (user && user.role) {
+    user.role = user.role.toLowerCase();
+    if (user.role === "client") user.role = "customer";
+  }
+  localStorage.setItem("herfa-auth", JSON.stringify({ user, token }));
+};
+
+export const clearAuth = () => {
+  localStorage.removeItem("herfa-auth");
+};

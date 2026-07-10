@@ -1,82 +1,59 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react'
-import AuthInput from '@/components/ui/AuthInput'
-import RoleToggle from '@/components/ui/RoleToggle'
-import SocialLogins from '@/components/ui/SocialLogins'
-import { useAuth } from '@/hooks/useAuth'
-import { findUserByEmail } from '@/lib/authStorage'
-
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
-})
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { Mail, Lock, LogIn, ArrowRight, Loader2 } from "lucide-react";
+import AuthInput from "@/components/ui/AuthInput";
+import RoleToggle from "@/components/ui/RoleToggle";
+import SocialLogins from "@/components/ui/SocialLogins";
+import { useAuth } from "@/hooks/useApi";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "@/lib/schemas/auth";
+import { useToast } from "@/hooks/useToast";
 
 export default function LoginForm() {
-  const [activeRole, setActiveRole] = useState('customer')
-  const { login, isAuthenticated, user } = useAuth()
-  const router = useRouter()
+  const [activeRole, setActiveRole] = useState("customer");
+  const { login, isAuthenticated, user, loginLoading } = useAuth();
+  const toast = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(user?.role === 'artisan' ? '/artisan/dashboard' : '/customer/dashboard')
+      router.push(
+        user?.role === "artisan" ? "/artisan/dashboard" : "/customer/dashboard",
+      );
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, user, router]);
 
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     formState: { errors },
   } = useForm({
-    defaultValues: { email: '', password: '' },
-  })
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
-  const onSubmit = (values) => {
-    const parsed = loginSchema.safeParse(values)
-
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0]
-        if (typeof field === 'string') {
-          setError(field, { type: 'zod', message: issue.message })
-        }
-      }
-      return
+  const onSubmit = async (values) => {
+    try {
+      await login({ email: values.email, password: values.password });
+      toast.success("Welcome back!");
+      router.push(
+        activeRole === "artisan" ? "/artisan/dashboard" : "/customer/dashboard",
+      );
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Login failed";
+      setError("email", { type: "manual", message });
+      toast.error(message);
     }
-
-    const storedUser = findUserByEmail(values.email)
-
-    if (!storedUser) {
-      setError('email', { type: 'manual', message: 'This email is not registered yet.' })
-      return
-    }
-
-    if (storedUser.role !== activeRole) {
-      setError('email', {
-        type: 'manual',
-        message: `This account is registered as ${storedUser.role}.`,
-      })
-      return
-    }
-
-    if (storedUser.password !== values.password) {
-      setError('password', { type: 'manual', message: 'Incorrect password.' })
-      return
-    }
-
-    login(storedUser)
-    reset()
-    router.push(
-      storedUser.role === 'artisan' ? '/artisan/dashboard' : '/customer/dashboard'
-    )
-  }
+  };
 
   return (
     <>
@@ -105,7 +82,7 @@ export default function LoginForm() {
           placeholder="name@example.com"
           type="email"
           error={errors.email?.message}
-          {...register('email')}
+          {...register("email")}
         />
 
         <div className="flex flex-col gap-3">
@@ -115,7 +92,7 @@ export default function LoginForm() {
             placeholder="Enter your password"
             type="password"
             error={errors.password?.message}
-            {...register('password')}
+            {...register("password")}
           />
           <Link
             href="/auth/forgot-password"
@@ -127,10 +104,17 @@ export default function LoginForm() {
 
         <button
           type="submit"
-          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 sm:mt-2 sm:py-3.5 sm:text-base"
+          disabled={loginLoading}
+          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
         >
-          <span>Continue as {activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}</span>
-          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          {loginLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          )}
+          <span>
+            {loginLoading ? "Signing in..." : `Continue as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`}
+          </span>
         </button>
       </form>
 
@@ -143,7 +127,7 @@ export default function LoginForm() {
       <SocialLogins />
 
       <p className="text-center text-sm font-medium leading-6 tracking-wide text-gray-500">
-        Don't have an account?{' '}
+        Don't have an account?{" "}
         <Link
           href="/auth/signup"
           className="cursor-pointer font-bold text-emerald-500 transition-all hover:underline underline-offset-4"
@@ -152,5 +136,5 @@ export default function LoginForm() {
         </Link>
       </p>
     </>
-  )
+  );
 }

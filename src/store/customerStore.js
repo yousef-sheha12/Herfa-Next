@@ -1,24 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-const defaultServiceCategories = [
-  { id: 1, name: 'Plumbing', icon: 'Wrench' },
-  { id: 2, name: 'Electrical', icon: 'Zap' },
-  { id: 3, name: 'Carpentry', icon: 'Hammer' },
-  { id: 4, name: 'HVAC', icon: 'Thermometer' },
-  { id: 5, name: 'Painting', icon: 'Paintbrush' },
-  { id: 6, name: 'Cleaning', icon: 'SprayCan' },
-  { id: 7, name: 'Gardening', icon: 'Flower2' },
-  { id: 8, name: 'Appliance Repair', icon: 'Settings' },
-]
-
-const mockArtisans = [
-  { id: 1, name: 'Ahmed Hassan', specialty: 'Plumbing', rating: 4.9, location: { lat: 30.0444, lng: 31.2357 }, price: 150 },
-  { id: 2, name: 'Fatima Ali', specialty: 'Electrical', rating: 4.8, location: { lat: 30.056, lng: 31.226 }, price: 200 },
-  { id: 3, name: 'Omar Mahmoud', specialty: 'Carpentry', rating: 4.7, location: { lat: 30.05, lng: 31.24 }, price: 180 },
-  { id: 4, name: 'Layla Ibrahim', specialty: 'Painting', rating: 4.9, location: { lat: 30.048, lng: 31.23 }, price: 120 },
-]
-
 const useCustomerStore = create(
   persist(
     (set, get) => ({
@@ -44,8 +26,8 @@ const useCustomerStore = create(
         cancelled: [],
       },
 
-      serviceCategories: defaultServiceCategories,
-      availableArtisans: mockArtisans,
+      serviceCategories: [],
+      availableArtisans: [],
       nearbyArtisans: [],
       favoriteArtisans: [],
 
@@ -132,18 +114,6 @@ const useCustomerStore = create(
           searchFilters: { ...s.searchFilters, ...filters },
         })),
 
-      searchArtisans: (filters = {}) => {
-        const results = mockArtisans.filter((a) => {
-          if (filters.category && a.specialty !== filters.category) return false
-          if (filters.rating && a.rating < filters.rating) return false
-          if (filters.priceRange) {
-            if (a.price < filters.priceRange[0] || a.price > filters.priceRange[1]) return false
-          }
-          return true
-        })
-        set({ availableArtisans: results, loading: { ...get().loading, search: false } })
-      },
-
       addReview: (review) => set((s) => ({ reviews: [...s.reviews, review] })),
       addPendingReview: (artisanId) =>
         set((s) => ({
@@ -191,8 +161,8 @@ const useCustomerStore = create(
             preferences: { notifications: true, emailUpdates: true, smsAlerts: false },
           },
           requests: { pending: [], accepted: [], inProgress: [], completed: [], cancelled: [] },
-          serviceCategories: defaultServiceCategories,
-          availableArtisans: mockArtisans,
+          serviceCategories: [],
+      availableArtisans: [],
           nearbyArtisans: [],
           favoriteArtisans: [],
           searchFilters: { category: '', location: '', priceRange: [0, 1000], rating: 0, availability: 'any' },

@@ -1,36 +1,29 @@
-import axios from 'axios'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+import axios from "axios";
+import { getToken } from "@/lib/authStorage";
 
 const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+  baseURL: "/api",
+  headers: { "Content-Type": "application/json" },
+});
 
 api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const auth = localStorage.getItem('herfa-auth')
-    if (auth) {
-      const { token } = JSON.parse(auth)
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
-  }
-  return config
-})
+  const token = getToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('herfa-auth')
-      window.location.href = '/auth/login'
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401) {
+      const currentPath = window.location.pathname;
+      if (!currentPath.startsWith("/auth")) {
+        localStorage.removeItem("herfa-auth");
+        window.location.href = "/auth/login";
+      }
     }
-    return Promise.reject(error)
+    return Promise.reject(err);
   }
-)
+);
 
-export default api
+export default api;

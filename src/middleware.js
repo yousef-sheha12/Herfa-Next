@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    '/booking/:path*',
-    '/customer/:path*',
-    '/artisan/:path*',
-    '/auth/:path*',
+    "/booking/:path*",
+    "/customer/:path*",
+    "/artisan/:path*",
+    "/auth/:path*",
   ],
-}
+};

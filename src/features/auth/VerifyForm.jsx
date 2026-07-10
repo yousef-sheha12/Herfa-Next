@@ -1,69 +1,60 @@
-'use client'
+"use client";
 
-import { useRef, useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react'
-import {
-  clearPendingSignup,
-  createUser,
-  getPendingSignup,
-  getPasswordResetEmail,
-} from '@/lib/authStorage'
+import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export default function VerifyForm() {
-  const router = useRouter()
-  const [flowData, setFlowData] = useState({ pendingSignup: null, resetEmail: null })
+  const toast = useToast();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
-    setFlowData({
-      pendingSignup: getPendingSignup(),
-      resetEmail: getPasswordResetEmail(),
-    })
-  }, [])
+    try {
+      const reset = localStorage.getItem("herfa-password-reset-email");
+      if (reset) {
+        setEmail(reset);
+      } else {
+        router.push("/auth/forgot-password");
+      }
+    } catch {}
+  }, [router]);
 
-  const isSignupFlow = Boolean(flowData.pendingSignup)
-  const email = flowData.pendingSignup?.email || flowData.resetEmail
-
-  const [otp, setOtp] = useState(new Array(6).fill(''))
-  const inputRefs = useRef([])
+  const [otp, setOtp] = useState(new Array(6).fill(""));
+  const inputRefs = useRef([]);
 
   const handleChange = (element, index) => {
-    const value = element.value
-    if (isNaN(value)) return false
+    const value = element.value;
+    if (isNaN(value)) return false;
 
-    const newOtp = [...otp]
-    newOtp[index] = value.substring(value.length - 1)
-    setOtp(newOtp)
+    const newOtp = [...otp];
+    newOtp[index] = value.substring(value.length - 1);
+    setOtp(newOtp);
 
     if (value && index < 5) {
-      inputRefs.current[index + 1].focus()
+      inputRefs.current[index + 1].focus();
     }
-  }
+  };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus()
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
     }
-  }
+  };
 
   const handleContinue = () => {
-    const pd = getPendingSignup()
-    if (pd) {
-      createUser({
-        name: pd.fullName,
-        email: pd.email,
-        password: pd.password,
-        role: pd.role,
-        nationalId: pd.nationalId,
-        avatar: pd.avatar,
-      })
-      clearPendingSignup()
-      router.push('/auth/login')
-      return
+    const code = otp.join("");
+    if (!code || code.length < 6) {
+      toast.error("Please enter the full 6-digit code");
+      return;
     }
-    router.push('/auth/reset-password')
-  }
+
+    localStorage.setItem("herfa-password-reset-token", code);
+    toast.success("Code verified!");
+    router.push("/auth/reset-password");
+  };
 
   return (
     <>
@@ -72,16 +63,16 @@ export default function VerifyForm() {
           <ShieldCheck size={28} />
         </div>
         <h2 className="text-2xl font-extrabold tracking-tight text-gray-800 sm:text-3xl">
-          Verify Account.
+          Verify Code.
         </h2>
         <p className="px-2 text-sm font-light leading-relaxed text-gray-500 sm:px-4">
-          {isSignupFlow
-            ? 'Enter the 6-digit code to complete your demo signup verification.'
-            : 'Enter the 6-digit code sent to your email to continue the password reset demo flow.'}
+          Enter the 6-digit code sent to your email to continue resetting your password.
         </p>
-        <p className="rounded-full bg-amber-50 px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-600">
-          {email ? `Code sent to ${email}` : 'Temporary demo verification'}
-        </p>
+        {email && (
+          <p className="rounded-full bg-emerald-50 px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">
+            Code sent to {email}
+          </p>
+        )}
       </div>
 
       <form
@@ -107,28 +98,22 @@ export default function VerifyForm() {
         <button
           type="button"
           onClick={handleContinue}
-          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 sm:py-3.5 sm:text-base"
+          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
         >
-          <span>{isSignupFlow ? 'Verify & Go To Login' : 'Verify & Continue'}</span>
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <span>Verify & Continue</span>
         </button>
       </form>
 
       <div className="flex flex-col items-center gap-3 text-center">
-        <p className="text-sm font-medium text-gray-500">
-          Didn&apos;t receive code?{' '}
-          <button className="text-emerald-500 font-bold hover:underline">
-            Resend Code
-          </button>
-        </p>
         <Link
-          href={isSignupFlow ? '/auth/signup' : '/auth/forgot-password'}
+          href="/auth/forgot-password"
           className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-emerald-500 transition-all duration-300 group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>{isSignupFlow ? 'Back to Sign Up' : 'Edit Email Address'}</span>
+          <span>Edit Email Address</span>
         </Link>
       </div>
     </>
-  )
+  );
 }

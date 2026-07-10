@@ -1,14 +1,18 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { Mail, ArrowRight, ArrowLeft } from 'lucide-react'
-import AuthInput from '@/components/ui/AuthInput'
-import { findUserByEmail, setPasswordResetEmail } from '@/lib/authStorage'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import AuthInput from "@/components/ui/AuthInput";
+import { useForgotPassword } from "@/hooks/auth/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 export default function ForgotPassForm() {
-  const router = useRouter()
+  const toast = useToast();
+  const router = useRouter();
+  const { mutateAsync: sendForgotPassword, isPending } = useForgotPassword();
 
   const {
     register,
@@ -16,23 +20,28 @@ export default function ForgotPassForm() {
     setError,
     formState: { errors },
   } = useForm({
-    defaultValues: { email: '' },
-  })
+    defaultValues: { email: "" },
+  });
 
-  const onSubmit = ({ email }) => {
-    const storedUser = findUserByEmail(email)
-
-    if (!storedUser) {
-      setError('email', {
-        type: 'manual',
-        message: 'We could not find an account with this email.',
-      })
-      return
+  const onSubmit = async ({ email }) => {
+    try {
+      const res = await sendForgotPassword({ email });
+      const token = res?.data?.token;
+      localStorage.setItem("herfa-password-reset-email", email);
+      if (token) {
+        localStorage.setItem("herfa-password-reset-token", token);
+      }
+      toast.success("OTP sent to your email!");
+      router.push("/auth/reset-password");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Email not found";
+      setError("email", { type: "manual", message });
     }
-
-    setPasswordResetEmail(email)
-    router.push('/auth/verify')
-  }
+  };
 
   return (
     <>
@@ -41,10 +50,8 @@ export default function ForgotPassForm() {
           Forgot Password?
         </h2>
         <p className="text-gray-500 font-light text-sm leading-relaxed">
-          Enter your email address and we&apos;ll send you a recovery link to access your account.
-        </p>
-        <p className="rounded-full bg-amber-50 px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-600 w-fit">
-          Demo flow only for emails already saved in local storage
+          Enter your email address and we&apos;ll send you a recovery code to
+          access your account.
         </p>
       </div>
 
@@ -58,15 +65,20 @@ export default function ForgotPassForm() {
           icon={Mail}
           type="email"
           error={errors.email?.message}
-          {...register('email')}
+          {...register("email")}
         />
 
         <button
           type="submit"
-          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 sm:py-3.5 sm:text-base"
+          disabled={isPending}
+          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
         >
-          <span>Send OTP Code</span>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          {isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          )}
+          <span>{isPending ? "Sending..." : "Send OTP Code"}</span>
         </button>
       </form>
 
@@ -80,5 +92,5 @@ export default function ForgotPassForm() {
         </Link>
       </div>
     </>
-  )
+  );
 }
