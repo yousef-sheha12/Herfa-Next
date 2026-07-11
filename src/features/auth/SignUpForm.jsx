@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import {
   Mail,
@@ -108,23 +109,37 @@ export default function SignUpForm() {
   };
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <motion.div
+        className="flex flex-col gap-2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <h2 className="text-2xl font-extrabold tracking-tight text-gray-800 sm:text-3xl">
           Create Account.
         </h2>
         <p className="text-sm font-light leading-relaxed text-gray-500">
           Join the Herfa community as an artisan or a customer.
         </p>
-      </div>
+      </motion.div>
 
-      <RoleToggle activeRole={activeRole} setActiveRole={setActiveRole} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <RoleToggle activeRole={activeRole} setActiveRole={setActiveRole} />
+      </motion.div>
 
-      <form
+      <motion.form
         className="flex flex-col gap-3.5 sm:gap-4"
         onSubmit={handleSubmit(onSubmit)}
         autoComplete="off"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
       >
-        <div className="grid gap-3.5 md:flex-col md:gap-4">
+        <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-4">
           <AuthInput
             label="Full Name"
             placeholder="e.g. Yousef Sheha"
@@ -145,7 +160,13 @@ export default function SignUpForm() {
         </div>
 
         {activeRole === "artisan" && (
-          <div className="space-y-3.5">
+          <motion.div
+            className="space-y-3.5"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50/60 p-3 sm:p-4">
               <AuthInput
                 label="National ID"
@@ -182,10 +203,10 @@ export default function SignUpForm() {
                 </p>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
 
-        <div className="grid gap-3.5 md:flex-col md:gap-4">
+        <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-4">
           <AuthInput
             label="Password"
             placeholder="Enter your password"
@@ -205,10 +226,12 @@ export default function SignUpForm() {
           />
         </div>
 
-        <button
+        <motion.button
           type="submit"
           disabled={registerLoading || profileCreating}
-          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           {registerLoading || profileCreating ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -222,8 +245,8 @@ export default function SignUpForm() {
                 ? "Setting up profile..."
                 : `Sign Up as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`}
           </span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
 
       <div className="flex items-center gap-4 py-1">
         <div className="h-[1px] flex-1 bg-gray-100" />
@@ -233,7 +256,13 @@ export default function SignUpForm() {
         <div className="h-[1px] flex-1 bg-gray-100" />
       </div>
 
-      <SocialLogins />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <SocialLogins />
+      </motion.div>
 
       <p className="text-center text-sm font-medium leading-6 tracking-wide text-gray-500">
         Already have an account?{" "}

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Lock, ArrowRight, ShieldAlert, Loader2 } from "lucide-react";
 import AuthInput from "@/components/ui/AuthInput";
@@ -74,7 +75,12 @@ export default function ResetPassForm() {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-2 text-center">
+      <motion.div
+        className="flex flex-col items-center gap-2 text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent sm:h-16 sm:w-16">
           <ShieldAlert size={28} />
         </div>
@@ -84,11 +90,14 @@ export default function ResetPassForm() {
         <p className="px-2 text-sm font-light leading-relaxed text-gray-500">
           Enter your new password to reset your account.
         </p>
-      </div>
+      </motion.div>
 
-      <form
+      <motion.form
         className="mt-1 flex flex-col gap-3.5 sm:mt-2 sm:gap-4"
         onSubmit={handleSubmit(onSubmit)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
       >
         <AuthInput
           label="New Password"
@@ -108,10 +117,12 @@ export default function ResetPassForm() {
           {...register("confirmPassword")}
         />
 
-        <button
+        <motion.button
           type="submit"
           disabled={isPending}
-          className="group mt-1 flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          className="group mt-1 flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           {isPending ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -119,8 +130,8 @@ export default function ResetPassForm() {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           )}
           <span>{isPending ? "Updating..." : "Update Password"}</span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
     </>
   );
 }

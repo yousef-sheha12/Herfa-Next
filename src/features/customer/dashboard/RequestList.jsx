@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import StatusCard from "./StatusCard";
 
@@ -27,27 +28,34 @@ export default function RequestList({ requests, isLoading }) {
   const pageItems = items.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 sm:gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-bold text-slate-800">Ongoing Requests</h3>
+          <h3 className="text-base font-bold text-slate-800 sm:text-lg">Ongoing Requests</h3>
           <span className="w-5 h-5 bg-[#B2EBF2] text-[#00838F] flex items-center justify-center rounded-full text-[10px] font-bold">
             {items.length}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         {isLoading ? (
           <div className="flex items-center justify-center p-10">
             <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
           </div>
         ) : pageItems.length > 0 ? (
-          pageItems.map((r) => (
-            <StatusCard key={r.uniqueKey} icon={r.icon} title={r.title} artisan={r.artisanName || "Matching..."} status={r.status} date={r.date} />
+          pageItems.map((r, index) => (
+            <motion.div
+              key={r.uniqueKey}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <StatusCard icon={r.icon} title={r.title} artisan={r.artisanName || "Matching..."} status={r.status} date={r.date} />
+            </motion.div>
           ))
         ) : (
-          <div className="p-10 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
+          <div className="p-8 sm:p-10 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
             <p className="text-slate-400 text-sm">No active requests.</p>
           </div>
         )}

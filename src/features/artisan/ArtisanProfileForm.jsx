@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useApi";
 import {
   useCreateArtisanProfile,
@@ -118,20 +119,28 @@ export default function ArtisanProfileForm() {
   return (
     <div className="min-h-screen bg-slate-50/50">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-        <button
+        <motion.button
           onClick={() => router.back()}
           className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ x: -3 }}
         >
           <ArrowLeft size={18} /> Back
-        </button>
+        </motion.button>
 
-        <div className="rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm sm:p-10">
+        <motion.div
+          className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm sm:p-8 sm:rounded-[2rem]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="mb-8 flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-slate-800 text-white shadow-lg shadow-emerald-500/20">
-              <Hammer size={22} />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-slate-800 text-white shadow-lg shadow-emerald-500/20 sm:h-12 sm:w-12">
+              <Hammer size={20} />
             </span>
             <div>
-              <h1 className="text-2xl font-black text-slate-900">
+              <h1 className="text-xl font-black text-slate-900 sm:text-2xl">
                 Complete Your Profile
               </h1>
               <p className="text-sm text-slate-500">
@@ -140,8 +149,7 @@ export default function ArtisanProfileForm() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Category */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 sm:gap-6">
             <div>
               <label
                 htmlFor="categoryId"
@@ -169,7 +177,6 @@ export default function ArtisanProfileForm() {
               </select>
             </div>
 
-            {/* Profile Image */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Profile Image
@@ -177,7 +184,7 @@ export default function ArtisanProfileForm() {
               <div className="flex items-center gap-4">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors overflow-hidden"
+                  className="w-16 h-16 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors overflow-hidden sm:w-20 sm:h-20"
                 >
                   {imagePreview ? (
                     <img
@@ -186,7 +193,7 @@ export default function ArtisanProfileForm() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Camera size={20} className="text-slate-400" />
+                    <Camera size={18} className="text-slate-400 sm:w-5 sm:h-5" />
                   )}
                 </div>
                 <div className="text-xs text-slate-400">
@@ -203,7 +210,6 @@ export default function ArtisanProfileForm() {
               </div>
             </div>
 
-            {/* City */}
             <div>
               <label
                 htmlFor="city"
@@ -222,7 +228,6 @@ export default function ArtisanProfileForm() {
               />
             </div>
 
-            {/* National ID */}
             <div>
               <label
                 htmlFor="nationalId"
@@ -241,7 +246,6 @@ export default function ArtisanProfileForm() {
               />
             </div>
 
-            {/* Bio */}
             <div>
               <label
                 htmlFor="bio"
@@ -260,10 +264,12 @@ export default function ArtisanProfileForm() {
               />
             </div>
 
-            <button
+            <motion.button
               type="submit"
               disabled={createProfile.isPending}
               className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 disabled:opacity-50"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               {createProfile.isPending ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -273,9 +279,9 @@ export default function ArtisanProfileForm() {
               {createProfile.isPending
                 ? "Creating Profile..."
                 : "Complete Profile"}
-            </button>
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

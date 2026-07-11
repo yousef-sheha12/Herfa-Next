@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   useGetClientProfile,
   useUpdateClientProfile,
@@ -51,7 +52,12 @@ export default function CustomerSettings() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 mt-20">
+    <motion.div
+      className="mx-auto max-w-2xl px-4 py-12 sm:px-6 mt-20"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <h1 className="mb-2 text-2xl font-bold text-slate-800">Settings</h1>
       <p className="mb-8 text-sm text-slate-500">
         Update your profile information
@@ -103,10 +109,12 @@ export default function CustomerSettings() {
           </p>
         )}
 
-        <button
+        <motion.button
           type="submit"
           disabled={updateProfile.isPending}
           className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 disabled:opacity-50"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           {updateProfile.isPending ? (
             <Loader2 size={18} className="animate-spin" />
@@ -114,8 +122,8 @@ export default function CustomerSettings() {
             <Save size={18} />
           )}
           {updateProfile.isPending ? "Saving..." : "Save Changes"}
-        </button>
+        </motion.button>
       </form>
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   useGetNotifications,
   useGetUnreadNotifications,
@@ -51,9 +52,8 @@ export default function NotificationPanel({ onClose }) {
   };
 
   return (
-    <div className="w-[360px] max-h-[480px] flex flex-col rounded-3xl border border-gray-100 bg-white shadow-2xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+    <div className="w-[320px] sm:w-[360px] max-h-[420px] sm:max-h-[480px] flex flex-col rounded-3xl border border-gray-100 bg-white shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3.5 sm:px-5 sm:py-4">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
           {unreadCount > 0 && (
@@ -67,11 +67,10 @@ export default function NotificationPanel({ onClose }) {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-100 px-5 pt-3 gap-1">
+      <div className="flex border-b border-slate-100 px-4 sm:px-5 pt-3 gap-1">
         <button
           onClick={() => setTab("all")}
-          className={`rounded-t-xl px-4 py-2 text-xs font-bold transition-colors ${
+          className={`rounded-t-xl px-3 py-2 text-xs font-bold transition-colors sm:px-4 ${
             tab === "all"
               ? "bg-emerald-50 text-emerald-600"
               : "text-slate-400 hover:text-slate-600"
@@ -81,7 +80,7 @@ export default function NotificationPanel({ onClose }) {
         </button>
         <button
           onClick={() => setTab("unread")}
-          className={`rounded-t-xl px-4 py-2 text-xs font-bold transition-colors ${
+          className={`rounded-t-xl px-3 py-2 text-xs font-bold transition-colors sm:px-4 ${
             tab === "unread"
               ? "bg-emerald-50 text-emerald-600"
               : "text-slate-400 hover:text-slate-600"
@@ -114,7 +113,6 @@ export default function NotificationPanel({ onClose }) {
         </div>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
@@ -126,57 +124,63 @@ export default function NotificationPanel({ onClose }) {
             <p className="text-sm font-medium">No notifications</p>
           </div>
         ) : (
-          items.map((notification) => (
-            <div
-              key={notification.id}
-              className={`group relative flex items-start gap-3 border-b border-slate-50 px-5 py-4 transition-colors hover:bg-slate-50 ${
-                !notification.isRead ? "bg-emerald-50/30" : ""
-              }`}
-            >
-              <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                notification.isRead ? "bg-slate-100" : "bg-emerald-100"
-              }`}>
-                <Bell size={14} className={notification.isRead ? "text-slate-400" : "text-emerald-600"} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className={`text-sm leading-snug ${
-                  notification.isRead ? "text-slate-500" : "font-semibold text-slate-700"
+          <AnimatePresence>
+            {items.map((notification, index) => (
+              <motion.div
+                key={notification.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: index * 0.03 }}
+                className={`group relative flex items-start gap-3 border-b border-slate-50 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:px-5 sm:py-4 ${
+                  !notification.isRead ? "bg-emerald-50/30" : ""
+                }`}
+              >
+                <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  notification.isRead ? "bg-slate-100" : "bg-emerald-100"
                 }`}>
-                  {notification.message || notification.title || "Notification"}
-                </p>
-                {notification.createdAt && (
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    {new Date(notification.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                  <Bell size={14} className={notification.isRead ? "text-slate-400" : "text-emerald-600"} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={`text-sm leading-snug ${
+                    notification.isRead ? "text-slate-500" : "font-semibold text-slate-700"
+                  }`}>
+                    {notification.message || notification.title || "Notification"}
                   </p>
-                )}
-              </div>
-              <div className="flex shrink-0 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {!notification.isRead && (
+                  {notification.createdAt && (
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      {new Date(notification.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {!notification.isRead && (
+                    <button
+                      onClick={() => handleReadOne(notification.id)}
+                      disabled={readNotification.isPending}
+                      className="rounded-lg p-1.5 text-emerald-500 transition-colors hover:bg-emerald-50"
+                      title="Mark as read"
+                    >
+                      <Check size={13} />
+                    </button>
+                  )}
                   <button
-                    onClick={() => handleReadOne(notification.id)}
-                    disabled={readNotification.isPending}
-                    className="rounded-lg p-1.5 text-emerald-500 transition-colors hover:bg-emerald-50"
-                    title="Mark as read"
+                    onClick={() => handleDeleteOne(notification.id)}
+                    disabled={deleteNotification.isPending}
+                    className="rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50"
+                    title="Delete"
                   >
-                    <Check size={13} />
+                    <Trash2 size={13} />
                   </button>
-                )}
-                <button
-                  onClick={() => handleDeleteOne(notification.id)}
-                  disabled={deleteNotification.isPending}
-                  className="rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50"
-                  title="Delete"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-          ))
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

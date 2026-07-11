@@ -35,6 +35,9 @@ export const useAcceptOffer = () => {
       qc.invalidateQueries({ queryKey: ["requests"] });
       qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["unreadNotifications"] });
+      qc.invalidateQueries({ queryKey: ["artisans"] });
+      qc.invalidateQueries({ queryKey: ["artisanProfile"] });
+      qc.invalidateQueries({ queryKey: ["jobs"] });
     },
   });
 };

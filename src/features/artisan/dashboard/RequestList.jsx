@@ -7,9 +7,8 @@ import RequestCard from "./RequestCard";
 export default function RequestList({
   requests,
   isLoading,
-  onAccept,
-  onReject,
-  isAccepting,
+  onSendOffer,
+  isSending,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 3;
@@ -45,9 +44,8 @@ export default function RequestList({
             <RequestCard
               key={r.id}
               request={r}
-              onAccept={onAccept}
-              onReject={onReject}
-              isPending={isAccepting}
+              onSendOffer={onSendOffer}
+              isPending={isSending}
             />
           ))
         ) : (

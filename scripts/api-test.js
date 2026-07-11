@@ -1,17 +1,3 @@
-/**
- * Herfa API – Comprehensive Endpoint Test Script
- *
- * Tests every endpoint from the Swagger documentation.
- * Run:  node scripts/api-test.js
- *
- * The script:
- *  1. Registers a customer & artisan account
- *  2. Logs in both and stores JWT tokens
- *  3. Exercises every Artisan, Auth, Category, Client, Jobs, Notifications,
- *     Offers, Requests, and Reviews endpoint
- *  4. Prints a pass/fail summary at the end
- */
-
 const axios = require("axios");
 
 const BASE = "http://ammar22.runasp.net/api";
@@ -20,10 +6,9 @@ const TIMEOUT = 10_000;
 const http = axios.create({
   baseURL: BASE,
   timeout: TIMEOUT,
-  validateStatus: () => true, // never throw – we inspect status ourselves
+  validateStatus: () => true,
 });
 
-// ── helpers ──────────────────────────────────────────────────────────────────
 const ts = Date.now();
 let passed = 0;
 let failed = 0;
@@ -60,7 +45,6 @@ function auth(token) {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
-// ── state ────────────────────────────────────────────────────────────────────
 let customerToken, artisanToken;
 let artisanUserId, artisanId, customerId;
 const customerEmail = `customer${ts}@test.com`;
@@ -68,11 +52,9 @@ const artisanEmail = `artisan${ts}@test.com`;
 const password = "Test123456";
 const testCategoryId = 1;
 
-// ── TEST SUITE ───────────────────────────────────────────────────────────────
 (async () => {
   console.log("\n🧪  Herfa API – Full Endpoint Test Suite\n");
 
-  // ─── 1. AUTH ─────────────────────────────────────────────────────────────
   console.log("─── Auth ───");
 
   await test("POST /Auth/register  (customer – role 3)", async () => {
@@ -133,12 +115,10 @@ const testCategoryId = 1;
     const { status } = await http.post("/Auth/refresh", {
       refreshToken: "dummy-refresh-token",
     });
-    // 400 or 401 is acceptable for a dummy token
     assert(status >= 200 && status < 500, `status ${status}`);
     return true;
   });
 
-  // ─── 2. CATEGORIES ───────────────────────────────────────────────────────
   console.log("\n─── Categories ───");
 
   let createdCategoryId;
@@ -155,9 +135,8 @@ const testCategoryId = 1;
     const { status, data } = await http.post(
       "/categories",
       { name: `TestCat_${ts}`, iconUrl: "", description: "test category" },
-      auth(artisanToken) // may 403 but we check endpoint exists
+      auth(artisanToken)
     );
-    // Accept 200/201 (created) or 403 (not admin) – both prove the route works
     createdCategoryId = data?.id || data?.data?.id;
     assert(status >= 200 && status < 500, `status ${status}`);
     return true;
@@ -173,7 +152,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 3. ARTISAN ──────────────────────────────────────────────────────────
   console.log("\n─── Artisan ───");
 
   await test("GET /artisans", async () => {
@@ -195,7 +173,6 @@ const testCategoryId = 1;
     const { status, data } = await http.post("/artisans/profile", fd, {
       headers: { ...auth(artisanToken).headers, "Content-Type": "multipart/form-data" },
     });
-    // 415 is expected from Node.js FormData (works in browser)
     assert(status === 200 || status === 201 || status === 415, `status ${status}`);
     artisanId = data?.id || data?.data?.id;
     return true;
@@ -244,7 +221,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 4. CLIENT ───────────────────────────────────────────────────────────
   console.log("\n─── Client ───");
 
   await test("GET /clients/me/dashboard", async () => {
@@ -275,7 +251,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 5. REQUESTS ────────────────────────────────────────────────────────
   console.log("\n─── Requests ───");
 
   let createdRequestId;
@@ -322,7 +297,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // Create a fresh request for offer tests
   let offerRequestId;
   await test("POST /Requests (for offer test)", async () => {
     const { status, data } = await http.post(
@@ -341,7 +315,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 6. OFFERS ───────────────────────────────────────────────────────────
   console.log("\n─── Offers ───");
 
   let createdOfferId;
@@ -352,7 +325,6 @@ const testCategoryId = 1;
       { price: 500, message: "I can do this" },
       auth(artisanToken)
     );
-    // 500 expected if artisan profile not fully created
     assert(status >= 200 && status < 500 || status === 500, `status ${status}`);
     createdOfferId = data?.id || data?.data?.id;
     return true;
@@ -373,15 +345,12 @@ const testCategoryId = 1;
       null,
       auth(customerToken)
     );
-    // 500 expected if offer wasn't created
     assert(status >= 200 && status < 500 || status === 500, `status ${status}`);
     return true;
   });
 
-  // Create another offer for reject test
   let rejectOfferId;
   await test("POST /Offers/request/{requestId} (for reject)", async () => {
-    // First cancel the request so we can create a new one
     await http.patch(`/Requests/${offerRequestId || 1}/cancel`, null, auth(customerToken));
     const { status: rs } = await http.post(
       "/Requests",
@@ -400,7 +369,6 @@ const testCategoryId = 1;
       auth(artisanToken)
     );
     rejectOfferId = data?.id || data?.data?.id;
-    // 500 expected if artisan profile not fully created
     assert(status >= 200 && status < 500 || status === 500, `status ${status}`);
     return true;
   });
@@ -411,12 +379,10 @@ const testCategoryId = 1;
       null,
       auth(customerToken)
     );
-    // 500 expected if offer wasn't created
     assert(status >= 200 && status < 500 || status === 500, `status ${status}`);
     return true;
   });
 
-  // ─── 7. JOBS ─────────────────────────────────────────────────────────────
   console.log("\n─── Jobs ───");
 
   await test("GET /jobs", async () => {
@@ -443,7 +409,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 8. REVIEWS ──────────────────────────────────────────────────────────
   console.log("\n─── Reviews ───");
 
   await test("POST /jobs/{jobId}/review", async () => {
@@ -462,7 +427,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 9. NOTIFICATIONS ────────────────────────────────────────────────────
   console.log("\n─── Notifications ───");
 
   await test("GET /notifications", async () => {
@@ -518,7 +482,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 10. AUTH (continued) ────────────────────────────────────────────────
   console.log("\n─── Auth (continued) ───");
 
   await test("POST /Auth/reset-password", async () => {
@@ -527,7 +490,6 @@ const testCategoryId = 1;
       token: "dummy-token",
       newPassword: "NewPass123",
     });
-    // 400 expected for dummy token
     assert(status >= 200 && status < 500, `status ${status}`);
     return true;
   });
@@ -538,7 +500,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ─── 11. RESET-DB (dev) ─────────────────────────────────────────────────
   console.log("\n─── Dev ───");
 
   await test("GET /reset-db", async () => {
@@ -547,7 +508,6 @@ const testCategoryId = 1;
     return true;
   });
 
-  // ── SUMMARY ────────────────────────────────────────────────────────────────
   console.log("\n═══════════════════════════════════════════");
   console.log(
     `  Results:  ${passed} passed,  ${failed} failed  (total ${passed + failed})`

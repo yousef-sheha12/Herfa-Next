@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Hammer } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/hooks/useApi";
@@ -41,20 +42,25 @@ export default function BookingFlow() {
 
   if (user?.role === "artisan") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-20">
+        <motion.div
+          className="max-w-md text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Hammer size={40} className="text-slate-400" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Artisan Account</h2>
-          <p className="text-gray-500 mb-8">
+          <p className="text-gray-500 mb-8 text-sm sm:text-base">
             Service requests can only be created from a customer account. Please switch to a customer account or visit your dashboard to manage incoming requests.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/" className="btn btn-ghost text-gray-600">Back to Home</Link>
             <Link href="/artisan/dashboard" className="btn bg-primary text-white hover:bg-primary-dark">Go to Dashboard</Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -83,27 +89,35 @@ export default function BookingFlow() {
       <div className="max-w-2xl mx-auto px-4">
         <StepIndicator currentStep={step} />
 
-        {step === 1 && (
-          <CategorySelect categories={categories} isLoading={categoriesLoading} selected={category} onSelect={setCategory} onNext={handleNext} />
-        )}
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
+              <CategorySelect categories={categories} isLoading={categoriesLoading} selected={category} onSelect={setCategory} onNext={handleNext} />
+            </motion.div>
+          )}
 
-        {step === 2 && (
-          <RequestDetails
-            description={description} address={address} urgency={urgency}
-            isPending={createRequestMutation.isPending}
-            onChange={(field, value) => {
-              if (field === "description") setDescription(value);
-              if (field === "address") setAddress(value);
-              if (field === "urgency") setUrgency(value);
-            }}
-            onBack={() => setStep((s) => Math.max(s - 1, 1))}
-            onSubmit={handleSubmit}
-          />
-        )}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
+              <RequestDetails
+                description={description} address={address} urgency={urgency}
+                isPending={createRequestMutation.isPending}
+                onChange={(field, value) => {
+                  if (field === "description") setDescription(value);
+                  if (field === "address") setAddress(value);
+                  if (field === "urgency") setUrgency(value);
+                }}
+                onBack={() => setStep((s) => Math.max(s - 1, 1))}
+                onSubmit={handleSubmit}
+              />
+            </motion.div>
+          )}
 
-        {step === 3 && (
-          <SubmissionSuccess onGoToDashboard={() => router.push("/customer/dashboard")} />
-        )}
+          {step === 3 && (
+            <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}>
+              <SubmissionSuccess onGoToDashboard={() => router.push("/customer/dashboard")} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

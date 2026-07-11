@@ -15,19 +15,34 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
-const labels = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-const defaultData = [200, 320, 280, 380, 420, 360, 410];
+const dayLabels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-export default function EarningsChart({ earningsData }) {
+export default function EarningsChart({ earningsData, completedJobs }) {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
 
   useEffect(() => {
-    const todayVal = earningsData?.today;
-    const data = todayVal != null
-      ? [...defaultData.slice(0, -1), todayVal]
-      : defaultData;
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const dailyEarnings = [0, 0, 0, 0, 0, 0, 0];
+
+    if (Array.isArray(completedJobs)) {
+      completedJobs.forEach((job) => {
+        const jobDate = new Date(job.date || job.completedAt || job.updatedAt || job.createdAt || "");
+        if (jobDate >= startOfWeek) {
+          const dayIndex = jobDate.getDay();
+          dailyEarnings[dayIndex] += job.price || job.Price || 0;
+        }
+      });
+    }
+
+    const hasRealData = dailyEarnings.some((v) => v > 0);
+    const data = hasRealData ? dailyEarnings : [0, 0, 0, 0, 0, 0, 0];
+
     setChartData({
-      labels,
+      labels: dayLabels,
       datasets: [
         {
           label: "Earnings AED",
@@ -43,7 +58,7 @@ export default function EarningsChart({ earningsData }) {
         },
       ],
     });
-  }, [earningsData?.today]);
+  }, [earningsData?.today, completedJobs]);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

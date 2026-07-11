@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Mail, Lock, LogIn, ArrowRight, Loader2 } from "lucide-react";
 import AuthInput from "@/components/ui/AuthInput";
@@ -57,7 +58,12 @@ export default function LoginForm() {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-2 text-center">
+      <motion.div
+        className="flex flex-col items-center gap-2 text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-emerald-500 sm:h-14 sm:w-14">
           <LogIn className="h-6 w-6 sm:h-7 sm:w-7" />
         </div>
@@ -67,14 +73,23 @@ export default function LoginForm() {
         <p className="text-sm font-medium text-gray-400">
           Log in to your Herfa account
         </p>
-      </div>
+      </motion.div>
 
-      <RoleToggle activeRole={activeRole} setActiveRole={setActiveRole} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <RoleToggle activeRole={activeRole} setActiveRole={setActiveRole} />
+      </motion.div>
 
-      <form
+      <motion.form
         className="flex flex-col gap-3.5 sm:gap-4"
         onSubmit={handleSubmit(onSubmit)}
         autoComplete="off"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
       >
         <AuthInput
           label="Email Address"
@@ -102,10 +117,12 @@ export default function LoginForm() {
           </Link>
         </div>
 
-        <button
+        <motion.button
           type="submit"
           disabled={loginLoading}
-          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          className="group mt-1 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed sm:mt-2 sm:py-3.5 sm:text-base"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           {loginLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -115,8 +132,8 @@ export default function LoginForm() {
           <span>
             {loginLoading ? "Signing in..." : `Continue as ${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)}`}
           </span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
 
       <div className="relative my-1 flex h-px items-center justify-center bg-gray-100">
         <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">
@@ -124,7 +141,13 @@ export default function LoginForm() {
         </span>
       </div>
 
-      <SocialLogins />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <SocialLogins />
+      </motion.div>
 
       <p className="text-center text-sm font-medium leading-6 tracking-wide text-gray-500">
         Don't have an account?{" "}

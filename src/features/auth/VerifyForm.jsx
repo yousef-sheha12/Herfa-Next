@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
@@ -58,7 +59,12 @@ export default function VerifyForm() {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-2 text-center">
+      <motion.div
+        className="flex flex-col items-center gap-2 text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 sm:h-16 sm:w-16">
           <ShieldCheck size={28} />
         </div>
@@ -73,15 +79,18 @@ export default function VerifyForm() {
             Code sent to {email}
           </p>
         )}
-      </div>
+      </motion.div>
 
-      <form
+      <motion.form
         className="mt-1 flex flex-col gap-4 sm:mt-2 sm:gap-5"
         onSubmit={(e) => e.preventDefault()}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
       >
         <div className="grid grid-cols-6 gap-2 sm:gap-3">
           {otp.map((data, index) => (
-            <input
+            <motion.input
               key={index}
               type="text"
               maxLength="1"
@@ -91,19 +100,24 @@ export default function VerifyForm() {
               onKeyDown={(e) => handleKeyDown(e, index)}
               onFocus={(e) => e.target.select()}
               className="h-11 w-full rounded-xl border border-transparent bg-gray-100 text-center text-lg font-bold outline-none transition-all duration-300 focus:border-emerald-500/30 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 sm:h-12 sm:text-xl md:h-14 md:text-2xl"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 + index * 0.05 }}
             />
           ))}
         </div>
 
-        <button
+        <motion.button
           type="button"
           onClick={handleContinue}
-          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
+          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           <span>Verify & Continue</span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
 
       <div className="flex flex-col items-center gap-3 text-center">
         <Link

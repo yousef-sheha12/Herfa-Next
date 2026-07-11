@@ -7,7 +7,8 @@ export const useGetJobs = () =>
   useQuery({
     queryKey: ["jobs"],
     queryFn: async () => { const { data } = await api.get("/jobs"); return data; },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
   });
 export const useGetJobsById = (id) =>
   useQuery({

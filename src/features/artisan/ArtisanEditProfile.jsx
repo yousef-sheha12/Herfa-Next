@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useApi";
 import {
   useGetArtisans,
@@ -43,6 +44,8 @@ export default function ArtisanEditProfile() {
     ? categoriesData
     : categoriesData?.data || [];
 
+  const initialLoadDone = useRef(false);
+
   useEffect(() => {
     if (profile) {
       setForm({
@@ -50,8 +53,17 @@ export default function ArtisanEditProfile() {
         city: profile.city || "",
         categoryId: String(profile.categoryId || ""),
       });
+      initialLoadDone.current = true;
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (!initialLoadDone.current || !artisanId || !form.categoryId) return;
+    updateProfile.mutate(
+      { id: artisanId, bio: form.bio, city: form.city, categoryId: Number(form.categoryId) },
+      { onSuccess: () => toast.success("Category saved") }
+    );
+  }, [form.categoryId]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -89,20 +101,22 @@ export default function ArtisanEditProfile() {
 
   if (!artisanId) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
         <AlertTriangle className="w-12 h-12 text-amber-400" />
-        <h2 className="text-xl font-bold text-slate-800">
+        <h2 className="text-xl font-bold text-slate-800 text-center">
           No Artisan Profile Found
         </h2>
-        <p className="text-slate-500 text-sm">
+        <p className="text-slate-500 text-sm text-center">
           You need to create an artisan profile first.
         </p>
-        <button
+        <motion.button
           onClick={() => router.push("/artisan/create-profile")}
           className="mt-4 px-6 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Create Profile
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -110,47 +124,37 @@ export default function ArtisanEditProfile() {
   return (
     <div className="min-h-screen bg-slate-50/50 mt-10">
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <button
+        <motion.button
           onClick={() => router.back()}
           className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ x: -3 }}
         >
           <ArrowLeft size={18} /> Back
-        </button>
+        </motion.button>
 
-        <div className="rounded-[2rem] border border-slate-100 bg-white shadow-sm overflow-hidden">
-          {/* Header Banner */}
-          <div className="relative h-40 bg-gradient-to-br from-emerald-500 via-teal-600 to-slate-800">
+        <motion.div
+          className="rounded-[2rem] border border-slate-100 bg-white shadow-sm overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="relative h-32 sm:h-40 bg-gradient-to-br from-emerald-500 via-teal-600 to-slate-800">
             <div className="absolute inset-0 bg-black/10" />
           </div>
 
-          {/* Avatar Section */}
-          <div className="relative px-8 pb-8">
-            <div className="-mt-20 mb-6 flex items-end gap-6">
-              <div className="relative shrink-0">
-                <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-100">
-                  <img
-                    src={
-                      profile?.imageUrl ||
-                      profile?.avatar ||
-                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2000&auto=format&fit=crop"
-                    }
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <div className="pb-2">
-                <h1 className="text-2xl font-black text-slate-900">
-                  Edit Profile
-                </h1>
-                <p className="text-sm text-slate-500">
-                  Update your artisan information
-                </p>
-              </div>
+          <div className="relative px-5 pb-6 sm:px-8 sm:pb-8">
+            <div className="mb-5 sm:mb-6">
+              <h1 className="text-xl font-black text-slate-900 sm:text-2xl">
+                {myArtisan?.userName || user?.username || "Artisan"}
+              </h1>
+              <p className="text-sm text-slate-500">
+                Update your artisan information
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-              {/* Bio */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-8">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Bio
@@ -165,8 +169,7 @@ export default function ArtisanEditProfile() {
                 />
               </div>
 
-              {/* Category & City */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Category *
@@ -204,10 +207,12 @@ export default function ArtisanEditProfile() {
                 </div>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={updateProfile.isPending}
-                className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 disabled:opacity-50"
+                className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 disabled:opacity-50"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 {updateProfile.isPending ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -215,10 +220,10 @@ export default function ArtisanEditProfile() {
                   <Save size={18} />
                 )}
                 {updateProfile.isPending ? "Saving..." : "Save Changes"}
-              </button>
+              </motion.button>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

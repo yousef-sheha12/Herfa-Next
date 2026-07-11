@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Calendar, Hammer, Droplet, Zap, PaintBucket, Wrench } from "lucide-react";
 
 const iconMap = { carpentry: Hammer, plumbing: Droplet, electrical: Zap, painting: PaintBucket, general: Wrench, maintenance: Wrench };
@@ -21,22 +22,26 @@ export default function StatusCard({ icon, title, status, date, artisan }) {
   const displayStatus = normalizedStatus === "in_progress" ? "in progress" : normalizedStatus;
 
   return (
-    <div className="bg-white p-5 rounded-3xl border border-slate-50 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-2xl ${theme.iconBg} ${theme.iconText}`}><Icon size={24} /></div>
-          <div>
-            <h4 className="text-[14px] font-bold text-slate-800">{title}</h4>
-            <p className="text-[10px] text-slate-400 font-medium">Artisan: {artisan || "Matching..."}</p>
+    <motion.div
+      className="bg-white p-4 rounded-3xl border border-slate-50 shadow-sm flex flex-col gap-4 sm:p-5 hover:shadow-md transition-shadow"
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`p-3 rounded-2xl ${theme.iconBg} ${theme.iconText} shrink-0`}><Icon size={22} /></div>
+          <div className="min-w-0">
+            <h4 className="text-sm font-bold text-slate-800 truncate">{title}</h4>
+            <p className="text-[10px] text-slate-400 font-medium truncate">Artisan: {artisan || "Matching..."}</p>
           </div>
         </div>
-        <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${theme.badge}`}>{displayStatus}</span>
+        <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${theme.badge} shrink-0`}>{displayStatus}</span>
       </div>
       <div className="flex items-center justify-between pt-3 border-t border-slate-50">
         <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase">
           <Calendar size={12} /> <span>{date}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

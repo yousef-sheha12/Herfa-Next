@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import AuthInput from "@/components/ui/AuthInput";
@@ -45,7 +46,12 @@ export default function ForgotPassForm() {
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <motion.div
+        className="flex flex-col gap-2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <h2 className="text-2xl font-extrabold tracking-tight text-gray-800 sm:text-3xl">
           Forgot Password?
         </h2>
@@ -53,11 +59,14 @@ export default function ForgotPassForm() {
           Enter your email address and we&apos;ll send you a recovery code to
           access your account.
         </p>
-      </div>
+      </motion.div>
 
-      <form
+      <motion.form
         className="mt-1 flex flex-col gap-4 sm:mt-2 sm:gap-5"
         onSubmit={handleSubmit(onSubmit)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
       >
         <AuthInput
           label="Email Address"
@@ -68,10 +77,12 @@ export default function ForgotPassForm() {
           {...register("email")}
         />
 
-        <button
+        <motion.button
           type="submit"
           disabled={isPending}
-          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-primary/30 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
+          className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed sm:py-3.5 sm:text-base"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           {isPending ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -79,8 +90,8 @@ export default function ForgotPassForm() {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           )}
           <span>{isPending ? "Sending..." : "Send OTP Code"}</span>
-        </button>
-      </form>
+        </motion.button>
+      </motion.form>
 
       <div className="flex flex-col items-center gap-3 text-center">
         <Link
