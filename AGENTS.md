@@ -10,7 +10,7 @@
 - Error format: `{ message: "..." }` – only check `err?.response?.data?.message`.
 - Register role: integer `1` (Customer) / `2` (Artisan) – not string.
 - No third-party toast libraries (custom `useToast` only).
-- Zustand stores must not reference deleted variables.
+- No Zustand stores (removed; all state via React Query hooks).
 
 ## API Base
 `http://ammar22.runasp.net/api`
@@ -22,20 +22,22 @@
 - API paths match Swagger PascalCase controllers (`/Category`, `/Jobs`, `/Offers`, `/Requests`, `/Notifications`, `/Client`).
 - All pages connected to real API hooks (Artisan Dashboard, Customer Dashboard, Booking Flow).
 - Correct API response shapes established (categories as direct array, auth with `user` wrapper, etc.).
-- Zustand `customerStore` cleaned of deleted `defaultServiceCategories` / `mockArtisans` variables.
 - **Artisan Dashboard** (395→130 lines) split into 4 components: `StatCards`, `EarningsChart`, `RequestCard`, `RequestList`.
 - **Customer Dashboard** (512→75 lines) split into 4 components: `HeroBanner`, `StatusCard`, `RequestList`, `RequestForm`.
 - **Artisan Profile** (~280 lines) split into 4 components: `ProfileHeader`, `Portfolio`, `Expertise`, `StatBox`; removed `fallbackArtisan` mock data.
 - **Booking Flow** (~296 lines) split into 4 components: `StepIndicator`, `CategorySelect`, `RequestDetails`, `SubmissionSuccess`.
 - Replaced `react-hot-toast` with custom `ToastProvider` (`src/hooks/useToast.jsx`).
 - `RequestForm.jsx` cleaned of duplicate `lucide-react` imports.
+- **Simplification pass**: deleted 6 dead code files (~535 lines), removed unused deps (`react-hot-toast`, `zustand`), extracted `PremiumSection`, `NotificationItem`, `useDashboardData` hook.
 - Build passes successfully.
 
 ### Component Locations
 - `src/features/artisan/dashboard/` – StatCards, EarningsChart, RequestCard, RequestList
 - `src/features/artisan/profile/` – ProfileHeader, Portfolio, Expertise, StatBox
-- `src/features/customer/dashboard/` – HeroBanner, StatusCard, RequestList, RequestForm
+- `src/features/customer/dashboard/` – HeroBanner, StatusCard, RequestList, RequestForm, OfferCard, OffersList
 - `src/features/booking/` – StepIndicator, CategorySelect, RequestDetails, SubmissionSuccess
+- `src/features/home/` – Hero, MeetTheMasters, ArtisanCard, Features, PremiumSection
+- `src/components/layout/` – Navbar, NotificationPanel, NotificationItem, Footer, AuthLayout, MainLayout
 
 ### staleTime Values
 - `useGetCategories` → 10 min + `refetchOnWindowFocus: false`

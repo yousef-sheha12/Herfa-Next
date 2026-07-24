@@ -21,10 +21,13 @@ export default function BookingFlow() {
   const { user } = useAuth();
   const preselectedService = searchParams.get("service");
 
-  const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetCategories();
   const createRequestMutation = useCreateRequest();
 
-  const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData?.data || [];
+  const categories = Array.isArray(categoriesData)
+    ? categoriesData
+    : categoriesData?.data || [];
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -34,7 +37,7 @@ export default function BookingFlow() {
   useEffect(() => {
     if (preselectedService && categories.length > 0 && !category) {
       const match = categories.find(
-        (c) => c.name?.toLowerCase() === preselectedService.toLowerCase()
+        (c) => c.name?.toLowerCase() === preselectedService.toLowerCase(),
       );
       if (match) setCategory(match.name);
     }
@@ -52,13 +55,24 @@ export default function BookingFlow() {
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Hammer size={40} className="text-slate-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Artisan Account</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Artisan Account
+          </h2>
           <p className="text-gray-500 mb-8 text-sm sm:text-base">
-            Service requests can only be created from a customer account. Please switch to a customer account or visit your dashboard to manage incoming requests.
+            Service requests can only be created from a customer account. Please
+            switch to a customer account or visit your dashboard to manage
+            incoming requests.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/" className="btn btn-ghost text-gray-600">Back to Home</Link>
-            <Link href="/artisan/dashboard" className="btn bg-primary text-white hover:bg-primary-dark">Go to Dashboard</Link>
+            <Link href="/" className="btn btn-ghost text-gray-600">
+              Back to Home
+            </Link>
+            <Link
+              href="/artisan/dashboard"
+              className="btn bg-primary text-white hover:bg-primary-dark"
+            >
+              Go to Dashboard
+            </Link>
           </div>
         </motion.div>
       </div>
@@ -66,21 +80,40 @@ export default function BookingFlow() {
   }
 
   const handleNext = () => {
-    if (step === 1 && !category) { toast.error("Please select a service category"); return; }
-    if (step === 2 && !description.trim()) { toast.error("Please describe your service needs"); return; }
+    if (step === 1 && !category) {
+      toast.error("Please select a service category");
+      return;
+    }
+    if (step === 2 && !description.trim()) {
+      toast.error("Please describe your service needs");
+      return;
+    }
     setStep((s) => Math.min(s + 1, 3));
   };
 
   const handleSubmit = async () => {
     try {
       const selected = categories.find((c) => c.name === category);
-      await createRequestMutation.mutateAsync({ title: category, categoryId: selected?.id || 0, description, address, imageUrl: "" });
+      await createRequestMutation.mutateAsync({
+        title: category,
+        categoryId: selected?.id || 0,
+        description,
+        address,
+        imageUrl: "",
+      });
       toast.success("Request submitted!");
       setStep(3);
     } catch (err) {
-      const serverMsg = err?.response?.data?.message || err?.response?.data?.title || err?.response?.data?.detail;
+      const serverMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.response?.data?.detail;
       const status = err?.response?.status;
-      toast.error(status ? `Error ${status}: ${serverMsg || "Server error"}` : (err?.message || "Failed to submit request"));
+      toast.error(
+        status
+          ? `Error ${status}: ${serverMsg || "Server error"}`
+          : err?.message || "Failed to submit request",
+      );
     }
   };
 
@@ -91,15 +124,35 @@ export default function BookingFlow() {
 
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
-              <CategorySelect categories={categories} isLoading={categoriesLoading} selected={category} onSelect={setCategory} onNext={handleNext} />
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <CategorySelect
+                categories={categories}
+                isLoading={categoriesLoading}
+                selected={category}
+                onSelect={setCategory}
+                onNext={handleNext}
+              />
             </motion.div>
           )}
 
           {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
               <RequestDetails
-                description={description} address={address} urgency={urgency}
+                description={description}
+                address={address}
+                urgency={urgency}
                 isPending={createRequestMutation.isPending}
                 onChange={(field, value) => {
                   if (field === "description") setDescription(value);
@@ -113,8 +166,15 @@ export default function BookingFlow() {
           )}
 
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}>
-              <SubmissionSuccess onGoToDashboard={() => router.push("/customer/dashboard")} />
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <SubmissionSuccess
+                onGoToDashboard={() => router.push("/customer/dashboard")}
+              />
             </motion.div>
           )}
         </AnimatePresence>
